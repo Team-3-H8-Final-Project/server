@@ -11,15 +11,15 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      UserQuizAttempt.belongsTo(models.User, { 
-        foreignKey: 'userId' 
-      });
-      UserQuizAttempt.belongsTo(models.Quiz, { 
-        foreignKey: 'quizId' 
-      });
-      UserQuizAttempt.belongsTo(models.Feedback, { 
-        foreignKey: 'feedbackId' 
-      });
+      // UserQuizAttempt.belongsTo(models.User, { 
+      //   foreignKey: 'userId' 
+      // });
+      // UserQuizAttempt.belongsTo(models.Quiz, { 
+      //   foreignKey: 'quizId' 
+      // });
+      // UserQuizAttempt.belongsTo(models.Feedback, { 
+      //   foreignKey: 'feedbackId' 
+      // });
     }
   }
   UserQuiz.init({
