@@ -10,47 +10,18 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       username: {
-        allowNull: false,
         type: Sequelize.STRING,
-        validate: {
-          notEmpty: {
-            msg: 'Username is required'
-          },
-          notNull: {
-            msg: 'Username is required'
-          },
-        }
+        allowNull: false,
+        unique: true
       },
       email: {
         allowNull: false,
-        type: Sequelize.STRING,
-        validate : {
-          isEmail: {
-            msg: 'Email must be valid'
-          },
-          notEmpty: {
-            msg: 'Email is required'
-          },
-          notNull: {
-            msg: 'Email is required'
-          },
-        }
+        unique: true,
+        type: Sequelize.STRING
       },
       password: {
         allowNull: false,
-        type: Sequelize.STRING,
-        validate: {
-          notEmpty: {
-            msg: 'Password is required'
-          },
-          notNull: {
-            msg: 'Password is required'
-          },
-          min: {
-            args: 6,
-            msg: 'Password must be at least 6 characters long'
-          }
-        }
+        type: Sequelize.STRING
       },
       currentLevelId: {
         type: Sequelize.INTEGER,
@@ -65,6 +36,10 @@ module.exports = {
       },
       updatedAt: {
         allowNull: false,
+        type: Sequelize.DATE
+      },
+      verifiedAt: {
+        allowNull: true,
         type: Sequelize.DATE
       }
     });
