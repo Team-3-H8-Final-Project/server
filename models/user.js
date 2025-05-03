@@ -16,11 +16,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'currentLevelId',
         as: 'currentLevel'
       });
-      User.hasMany(models.UserQuiz, { 
-        foreignKey: 'userId' 
+      User.hasMany(models.UserQuiz, {
+        foreignKey: 'userId'
       });
-      User.hasMany(models.UserDailyQuizResult, { 
-        foreignKey: 'userId' 
+      User.hasMany(models.UserDailyQuizResult, {
+        foreignKey: 'userId'
       });
     }
   }
@@ -28,6 +28,9 @@ module.exports = (sequelize, DataTypes) => {
     username: {
       allowNull: false,
       type: DataTypes.STRING,
+      unique: {
+        msg: "Username must be unique"
+      },
       validate: {
         notEmpty: {
           msg: 'Username is required'
@@ -38,18 +41,21 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     email: {
-      allowNull: false,
       type: DataTypes.STRING,
-      validate : {
+      allowNull: false,
+      unique: {
+        msg: "Email must be unique"
+      },
+      validate: {
         isEmail: {
-          msg: 'Email must be valid'
-        },
-        notEmpty: {
-          msg: 'Email is required'
+          msg: "Invalid email format"
         },
         notNull: {
-          msg: 'Email is required'
+          msg: "Email is required"
         },
+        notEmpty: {
+          msg: "Email is required"
+        }
       }
     },
     password: {
@@ -77,12 +83,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {
     sequelize,
-    modelName: 'User',
-    hooks: {
-      beforeCreate: (user, options) => {
-        user.password = hashPassword(user.password)
-      },
-    }
+    modelName: 'User'
   });
   return User;
 };

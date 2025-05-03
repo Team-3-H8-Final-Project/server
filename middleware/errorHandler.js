@@ -1,13 +1,13 @@
 module.exports = (err, req, res, next) => {
     // console.log(err);
-    
+
     let status = err.status || 500;
     let message = err.message || 'Internal server error';
 
     switch (err.name) {
         case 'Unauthorized':
             status = 403;
-            message = 'Forbidden';
+            message = err.message;
             break;
         case 'NotFound':
             status = 404;
@@ -28,6 +28,10 @@ module.exports = (err, req, res, next) => {
         case 'SequelizeValidationError':
             status = 400;
             message = err.errors[0].message;
+            break;
+        case "BadRequest":
+            status = 400;
+            message = err.message;
             break;
         case 'JsonWebTokenError':
             message = 'Invalid token';
