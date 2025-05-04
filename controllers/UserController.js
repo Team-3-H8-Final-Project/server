@@ -62,7 +62,13 @@ class UserController {
 
     static async register(req, res, next) {
         try {
-            const { email, username, password } = req.body
+            const { name, email, username, password } = req.body
+            if (!name) {
+                throw {
+                    name: "BadRequest",
+                    message: "Name is required"
+                }
+            }
 
             if (!email) {
                 throw {
@@ -86,6 +92,7 @@ class UserController {
             }
             const hashedPassword = await hashPassword(password)
             const newUser = await User.create({
+                name: name,
                 username: username,
                 email: email,
                 password: hashedPassword
@@ -93,6 +100,7 @@ class UserController {
 
             res.status(201).json({
                 id: newUser.id,
+                name: newUser.name,
                 email: newUser.email,
                 username: newUser.username,
             })
