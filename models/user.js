@@ -58,6 +58,18 @@ module.exports = (sequelize, DataTypes) => {
         }
       }
     },
+    name: {
+      allowNull: false,
+      type: DataTypes.STRING,
+      validate: {
+        notEmpty: {
+          msg: 'Name is required'
+        },
+        notNull: {
+          msg: 'Name is required'
+        },
+      }
+    },
     password: {
       allowNull: false,
       type: DataTypes.STRING,
