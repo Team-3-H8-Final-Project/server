@@ -13,7 +13,7 @@ router.post('/register', UserController.register)
 
 router.post('/generate', authentication, Controller.generateQuestions);
 router.get('/questions', authentication, Controller.getQuestionsByLevel);
-
+router.get('/profile', authentication, UserController.getProfile);
 module.exports = {
     router
 } 
