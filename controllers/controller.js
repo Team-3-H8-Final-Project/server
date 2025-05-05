@@ -2,7 +2,7 @@ require('dotenv').config();
 const { GoogleGenAI } = require("@google/genai");
 const { question, Challenge } = require('../models');
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API });
+const ai = new GoogleGenAI({ apiKey: "AIzaSyA3bzCCK6ckqAkzKknoC2hDJJICM9GiZnY"});
 
 class Controller {
   static async generateGrammar(req, res, next) {
