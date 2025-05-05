@@ -2,6 +2,9 @@ const { Op } = require("sequelize");
 const { User } = require("../models");
 const { hashPassword, comparePassword } = require("../helpers/bcrypt");
 const { signToken } = require("../helpers/jwt");
+const { GoogleGenAI } = require("@google/genai");
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API });
+
 
 class UserController {
     static async login(req, res, next) {
@@ -106,6 +109,47 @@ class UserController {
             })
         } catch (error) {
             next(error)
+        }
+    }
+        static async getProfile(req, res, next) {
+        try {
+            const { id } = req.user;
+    
+            const user = await User.findByPk(id, {
+                attributes: ['id', 'name', 'email', 'username', 'createdAt', 'updatedAt'] 
+            });
+    
+            if (!user) {
+                throw {
+                    name: "NotFound",
+                    message: "User not found"
+                };
+            }
+    
+            const response = await ai.models.generateContent({
+                model: "gemini-2.0-flash",
+                contents: `Generate a short motivational quote for learning English. Keep it concise and inspiring.`
+            });
+    
+            let motivation = "Keep learning!";
+            if (response.text && typeof response.text === "string") {
+                motivation = response.text.trim();
+            }
+    
+            res.status(200).json({
+                message: "User profile retrieved successfully",
+                data: {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    username: user.username,
+                    createdAt: user.createdAt,
+                    updatedAt: user.updatedAt,
+                    motivation: motivation
+                }
+            });
+        } catch (error) {
+            next(error);
         }
     }
 }
