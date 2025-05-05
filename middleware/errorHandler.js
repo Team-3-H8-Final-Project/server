@@ -6,7 +6,7 @@ module.exports = (err, req, res, next) => {
 
     switch (err.name) {
         case 'Unauthorized':
-            status = 403;
+            status = 401;
             message = err.message;
             break;
         case 'NotFound':
