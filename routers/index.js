@@ -11,8 +11,10 @@ router.get('/', (req, res) => {
 router.post('/login', UserController.login)
 router.post('/register', UserController.register)
 
-router.post('/generate', authentication, Controller.generateQuestions);
-router.get('/questions', authentication, Controller.getQuestionsByLevel);
+router.post('/generate', authentication, Controller.generateGrammar);
+router.get('/grammar', authentication, Controller.getQuestionsByLevel);
+router.post('/challenge', authentication, Controller.generateChallenge);
+router.get('/challenge', authentication, Controller.getChallenges);
 router.get('/profile', authentication, UserController.getProfile);
 module.exports = {
     router

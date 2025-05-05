@@ -1,11 +1,11 @@
 require('dotenv').config();
 const { GoogleGenAI } = require("@google/genai");
-const { question } = require('../models');
+const { question, Challenge } = require('../models');
 
-const ai = new GoogleGenAI({ apiKey: "AIzaSyA3bzCCK6ckqAkzKknoC2hDJJICM9GiZnY" });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API });
 
 class Controller {
-  static async generateQuestions(req, res, next) {
+  static async generateGrammar(req, res, next) {
     try {
       const response = await ai.models.generateContent({
         model: "gemini-2.0-flash",
@@ -83,6 +83,98 @@ Sertakan minimal 5 contoh kalimat untuk setiap level kesulitan. Pastikan kalimat
       next(error);
     }
   }
+     static async generateChallenge(req, res, next) {
+      try {
+          const { theme } = req.body;
+  
+          if (!theme) {
+              return res.status(400).json({
+                  message: "Theme is required"
+              });
+          }
+  
+          const response = await ai.models.generateContent({
+              model: "gemini-2.0-flash",
+              contents: `Buat daftar soal bahasa Indonesia untuk tes kemampuan bahasa Inggris dengan tema "${theme}". Format setiap item:
+  
+  {
+    kalimat: "[Kalimat Bahasa Indonesia]",
+    level: "[Pemula | Menengah | Lanjutan | Fasih]",
+    jawabanBenar: "[Terjemahan yang benar]",
+    pilihanJawaban: ["...", "...", "...", "..."] <- ini termasuk jawabanBenar dan ingan jawaban benar kadang ada di posisi pertama, kadang ada di posisi kedua, kadang ada di posisi ke tiga, dan kadang juga ada di posisi ke empat jadi tidak netap ya
+  }
+  
+  Buat minimal 5 soal untuk setiap level. Pastikan pilihan jawaban masuk akal dan bervariasi. dan buat ini dalam format json.`,
+          });
+  
+          console.log(response.text);
+          if (!response.text || typeof response.text !== 'string') {
+              return res.status(500).json({ message: 'Gagal menerima respons teks dari AI.' });
+          }
+  
+          const cleanedText = response.text
+              .replace(/^```json/, '')
+              .replace(/```$/, '')
+              .trim();
+  
+          let parsed;
+          try {
+              parsed = JSON.parse(cleanedText);
+          } catch (err) {
+              console.error("Gagal parse JSON:", err);
+              console.error("Isi response:", response.text);
+              return res.status(500).json({ message: "Gagal memproses data AI", error: err.message });
+          }
+  
+          const formattedChallenges = parsed.map((item) => ({
+              question: item.kalimat,
+              answer: item.jawabanBenar,
+              level: item.level,
+              options: item.pilihanJawaban,
+              theme: theme
+          }));
+  
+          const savedChallenges = await Challenge.bulkCreate(formattedChallenges);
+  
+          res.status(201).json({
+              message: "Generated and saved successfully",
+              data: savedChallenges,
+          });
+  
+      } catch (error) {
+          next(error);
+      }
+  }
+  
+  static async getChallenges(req, res, next) {
+      try {
+          const { theme } = req.query;
+  
+          if (!theme) {
+              return res.status(400).json({
+                  message: "Theme is required"
+              });
+          }
+  
+          const challenges = await Challenge.findAll({
+              where: { theme },
+              attributes: ['id', 'question', 'answer', 'level', 'options', 'theme'],
+              order: [['level', 'ASC'], ['id', 'ASC']] 
+          });
+  
+          if (challenges.length === 0) {
+              return res.status(404).json({ message: `No challenges found for theme: ${theme}` });
+          }
+  
+          res.status(200).json({
+              message: `Challenges for theme: ${theme}`,
+              data: challenges
+          });
+      } catch (error) {
+          next(error);
+      }
+  }
+
 
 }
 
