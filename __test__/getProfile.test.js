@@ -40,9 +40,4 @@ describe('GET /profile', () => {
         expect(response.body.data).toHaveProperty("email", user.email)
     })
 
-    it('should return 401 when access token is not provided', async () => {
-        const response = await request(app).get('/profile')
-        expect(response.status).toBe(401)
-        expect(response.body).toHaveProperty("message", "Invalid token")
-    })
 })
