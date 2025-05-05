@@ -3,7 +3,6 @@ const app = require('../index')
 const { expect, describe, beforeAll, afterAll } = require("@jest/globals")
 const { User } = require('../models/index')
 const { hashPassword } = require("../helpers/bcrypt")
-const { signToken } = require("../helpers/jwt")
 
 beforeAll(async () => {
     const user = await User.create({
