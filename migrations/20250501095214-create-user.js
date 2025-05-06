@@ -23,17 +23,19 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
-
+      bio: {
+        allowNull: true,
+        type: Sequelize.STRING
+      },
       password: {
         allowNull: false,
         type: Sequelize.STRING
       },
+      // default 1
       currentLevelId: {
         type: Sequelize.INTEGER,
-        references: {
-          model: 'Levels',
-          key: 'id'
-        }
+        allowNull: false,
+        defaultValue: 1,
       },
       createdAt: {
         allowNull: false,
@@ -41,10 +43,6 @@ module.exports = {
       },
       updatedAt: {
         allowNull: false,
-        type: Sequelize.DATE
-      },
-      verifiedAt: {
-        allowNull: true,
         type: Sequelize.DATE
       }
     });
