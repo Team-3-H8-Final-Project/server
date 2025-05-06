@@ -6,11 +6,15 @@ const authentication = require("../middleware/authentication");
 const FeedbackController = require("../controllers/FeedbackController");
 
 router.get("/", (req, res) => {
-    res.send("Welcome to ");
+  res.send("Welcome to ");
 });
 
+// users
 router.post("/login", UserController.login);
 router.post("/register", UserController.register);
+router.get("/profile", authentication, UserController.getProfile);
+router.put("/profile", authentication, UserController.updateProfile);
+
 
 // grammar
 router.post("/generate", authentication, Controller.generateGrammar);
@@ -20,7 +24,7 @@ router.get("/grammar", authentication, Controller.getQuestionsByLevel);
 router.post("/challenge", authentication, Controller.generateChallenge);
 router.get("/challenge", authentication, Controller.getChallenges);
 
-router.get("/profile", authentication, UserController.getProfile);
+
 router.post("/conversation", authentication, Controller.generateConversation);
 router.get("/conversation", authentication, Controller.getConversations);
 router.delete(
@@ -29,9 +33,9 @@ router.delete(
   Controller.deleteConversation
 );
 router.post(
-    "/feedback/:type",
-    authentication,
-    FeedbackController.generateFeedback
+  "/feedback/:type",
+  authentication,
+  FeedbackController.generateFeedback
 ); //type : conversation | challenge | grammar
 router.get("/feedback", authentication, FeedbackController.getFeedback);
 router.get("/feedback/:id", authentication, FeedbackController.getFeedbackById);
@@ -41,5 +45,5 @@ router.delete(
   FeedbackController.deleteFeedback
 );
 module.exports = {
-    router,
+  router,
 };
