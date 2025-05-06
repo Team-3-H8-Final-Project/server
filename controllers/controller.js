@@ -97,11 +97,6 @@ Sertakan minimal 5 contoh kalimat untuk setiap level kesulitan. Pastikan kalimat
   Buat minimal 5 soal untuk setiap level. Pastikan pilihan jawaban masuk akal dan bervariasi. dan buat ini dalam format json.`,
       });
 
-      console.log(response.text);
-      if (!response.text || typeof response.text !== 'string') {
-        return res.status(500).json({ message: 'Gagal menerima respons teks dari AI.' });
-      }
-
       const cleanedText = response.text
         .replace(/^```json/, '')
         .replace(/```$/, '')
@@ -111,8 +106,6 @@ Sertakan minimal 5 contoh kalimat untuk setiap level kesulitan. Pastikan kalimat
       try {
         parsed = JSON.parse(cleanedText);
       } catch (err) {
-        console.error("Gagal parse JSON:", err);
-        console.error("Isi response:", response.text);
         return res.status(500).json({ message: "Gagal memproses data AI", error: err.message });
       }
 
@@ -151,10 +144,6 @@ Sertakan minimal 5 contoh kalimat untuk setiap level kesulitan. Pastikan kalimat
         attributes: ['id', 'question', 'answer', 'level', 'options', 'theme'],
         order: [['level', 'ASC'], ['id', 'ASC']]
       });
-
-      if (challenges.length === 0) {
-        return res.status(404).json({ message: `No challenges found for theme: ${theme}` });
-      }
 
       res.status(200).json({
         message: `Challenges for theme: ${theme}`,
