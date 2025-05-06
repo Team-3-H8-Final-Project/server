@@ -1,6 +1,6 @@
 require("dotenv").config();
 const { GoogleGenAI } = require("@google/genai");
-const { User, Challenge, Level, Conversation } = require("../models");
+const { question,User, Challenge, Level, Conversation } = require("../models");
 
 const ai = new GoogleGenAI({ apiKey: "AIzaSyA3bzCCK6ckqAkzKknoC2hDJJICM9GiZnY"});
 
