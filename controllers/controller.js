@@ -2,7 +2,7 @@ require('dotenv').config();
 const { GoogleGenAI } = require("@google/genai");
 const { question, Challenge } = require('../models');
 
-const ai = new GoogleGenAI({ apiKey: "AIzaSyA3bzCCK6ckqAkzKknoC2hDJJICM9GiZnY"});
+const ai = new GoogleGenAI({ apiKey: "AIzaSyA3bzCCK6ckqAkzKknoC2hDJJICM9GiZnY" });
 
 class Controller {
   static async generateGrammar(req, res, next) {
@@ -17,10 +17,6 @@ jawabanBenar : "[Terjemahan Bahasa Inggris yang Benar]"
 
 Sertakan minimal 5 contoh kalimat untuk setiap level kesulitan. Pastikan kalimat-kalimat tersebut bervariasi dalam struktur dan kosakata. Fokus pada kalimat-kalimat yang umum digunakan dalam percakapan sehari-hari. Output harus berupa array JSON.`,
       });
-
-      if (!response.text || typeof response.text !== 'string') {
-        return res.status(500).json({ message: 'Gagal menerima respons teks dari AI.' });
-      }
 
       console.log("Response Text:", response.text);
 
@@ -44,8 +40,6 @@ Sertakan minimal 5 contoh kalimat untuk setiap level kesulitan. Pastikan kalimat
           data: savedQuestions,
         });
       } catch (parseError) {
-        console.error("Error parsing JSON:", parseError);
-        console.error("Teks yang gagal di-parse:", response.text);
         return res.status(500).json({ message: 'Gagal memproses respons JSON dari AI.', error: parseError.message });
       }
     } catch (error) {
@@ -71,10 +65,6 @@ Sertakan minimal 5 contoh kalimat untuk setiap level kesulitan. Pastikan kalimat
         attributes: ['id', 'question', 'answer', 'level'],
       });
 
-      if (questions.length === 0) {
-        return res.status(404).json({ message: `No questions found for level: ${level}` });
-      }
-
       res.status(200).json({
         message: `Questions for level: ${level}`,
         data: questions,
@@ -83,19 +73,19 @@ Sertakan minimal 5 contoh kalimat untuk setiap level kesulitan. Pastikan kalimat
       next(error);
     }
   }
-     static async generateChallenge(req, res, next) {
-      try {
-          const { theme } = req.body;
-  
-          if (!theme) {
-              return res.status(400).json({
-                  message: "Theme is required"
-              });
-          }
-  
-          const response = await ai.models.generateContent({
-              model: "gemini-2.0-flash",
-              contents: `Buat daftar soal bahasa Indonesia untuk tes kemampuan bahasa Inggris dengan tema "${theme}". Format setiap item:
+  static async generateChallenge(req, res, next) {
+    try {
+      const { theme } = req.body;
+
+      if (!theme) {
+        return res.status(400).json({
+          message: "Theme is required"
+        });
+      }
+
+      const response = await ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: `Buat daftar soal bahasa Indonesia untuk tes kemampuan bahasa Inggris dengan tema "${theme}". Format setiap item:
   
   {
     kalimat: "[Kalimat Bahasa Indonesia]",
@@ -105,74 +95,74 @@ Sertakan minimal 5 contoh kalimat untuk setiap level kesulitan. Pastikan kalimat
   }
   
   Buat minimal 5 soal untuk setiap level. Pastikan pilihan jawaban masuk akal dan bervariasi. dan buat ini dalam format json.`,
-          });
-  
-          console.log(response.text);
-          if (!response.text || typeof response.text !== 'string') {
-              return res.status(500).json({ message: 'Gagal menerima respons teks dari AI.' });
-          }
-  
-          const cleanedText = response.text
-              .replace(/^```json/, '')
-              .replace(/```$/, '')
-              .trim();
-  
-          let parsed;
-          try {
-              parsed = JSON.parse(cleanedText);
-          } catch (err) {
-              console.error("Gagal parse JSON:", err);
-              console.error("Isi response:", response.text);
-              return res.status(500).json({ message: "Gagal memproses data AI", error: err.message });
-          }
-  
-          const formattedChallenges = parsed.map((item) => ({
-              question: item.kalimat,
-              answer: item.jawabanBenar,
-              level: item.level,
-              options: item.pilihanJawaban,
-              theme: theme
-          }));
-  
-          const savedChallenges = await Challenge.bulkCreate(formattedChallenges);
-  
-          res.status(201).json({
-              message: "Generated and saved successfully",
-              data: savedChallenges,
-          });
-  
-      } catch (error) {
-          next(error);
+      });
+
+      console.log(response.text);
+      if (!response.text || typeof response.text !== 'string') {
+        return res.status(500).json({ message: 'Gagal menerima respons teks dari AI.' });
       }
-  }
-  
-  static async getChallenges(req, res, next) {
+
+      const cleanedText = response.text
+        .replace(/^```json/, '')
+        .replace(/```$/, '')
+        .trim();
+
+      let parsed;
       try {
-          const { theme } = req.query;
-  
-          if (!theme) {
-              return res.status(400).json({
-                  message: "Theme is required"
-              });
-          }
-  
-          const challenges = await Challenge.findAll({
-              where: { theme },
-              attributes: ['id', 'question', 'answer', 'level', 'options', 'theme'],
-              order: [['level', 'ASC'], ['id', 'ASC']] 
-          });
-  
-          if (challenges.length === 0) {
-              return res.status(404).json({ message: `No challenges found for theme: ${theme}` });
-          }
-  
-          res.status(200).json({
-              message: `Challenges for theme: ${theme}`,
-              data: challenges
-          });
-      } catch (error) {
-          next(error);
+        parsed = JSON.parse(cleanedText);
+      } catch (err) {
+        console.error("Gagal parse JSON:", err);
+        console.error("Isi response:", response.text);
+        return res.status(500).json({ message: "Gagal memproses data AI", error: err.message });
       }
+
+      const formattedChallenges = parsed.map((item) => ({
+        question: item.kalimat,
+        answer: item.jawabanBenar,
+        level: item.level,
+        options: item.pilihanJawaban,
+        theme: theme
+      }));
+
+      const savedChallenges = await Challenge.bulkCreate(formattedChallenges);
+
+      res.status(201).json({
+        message: "Generated and saved successfully",
+        data: savedChallenges,
+      });
+
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getChallenges(req, res, next) {
+    try {
+      const { theme } = req.query;
+
+      if (!theme) {
+        return res.status(400).json({
+          message: "Theme is required"
+        });
+      }
+
+      const challenges = await Challenge.findAll({
+        where: { theme },
+        attributes: ['id', 'question', 'answer', 'level', 'options', 'theme'],
+        order: [['level', 'ASC'], ['id', 'ASC']]
+      });
+
+      if (challenges.length === 0) {
+        return res.status(404).json({ message: `No challenges found for theme: ${theme}` });
+      }
+
+      res.status(200).json({
+        message: `Challenges for theme: ${theme}`,
+        data: challenges
+      });
+    } catch (error) {
+      next(error);
+    }
   }
 
 
