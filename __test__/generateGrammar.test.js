@@ -36,5 +36,5 @@ describe('POST /generate', () => {
             .set('Authorization', `Bearer ${accessToken}`)
             .expect(201)
         expect(response.body).toHaveProperty("message", "Questions generated and saved successfully")
-    }, 15000) // add additional timeout for the test to allow for AI response time
+    }, 15000) // add additional timeout for the test to allow for AI response time  
 })
