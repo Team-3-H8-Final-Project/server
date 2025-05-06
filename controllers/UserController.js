@@ -111,31 +111,15 @@ class UserController {
             next(error)
         }
     }
-        static async getProfile(req, res, next) {
+
+    static async getProfile(req, res, next) {
         try {
             const { id } = req.user;
-    
+
             const user = await User.findByPk(id, {
-                attributes: ['id', 'name', 'email', 'username', 'createdAt', 'updatedAt'] 
+                attributes: ['id', 'name', 'email', 'username', 'createdAt', 'updatedAt']
             });
-    
-            if (!user) {
-                throw {
-                    name: "NotFound",
-                    message: "User not found"
-                };
-            }
-    
-            const response = await ai.models.generateContent({
-                model: "gemini-2.0-flash",
-                contents: `Generate a short motivational quote for learning English. Keep it concise and inspiring.`
-            });
-    
-            let motivation = "Keep learning!";
-            if (response.text && typeof response.text === "string") {
-                motivation = response.text.trim();
-            }
-    
+
             res.status(200).json({
                 message: "User profile retrieved successfully",
                 data: {
@@ -144,8 +128,7 @@ class UserController {
                     email: user.email,
                     username: user.username,
                     createdAt: user.createdAt,
-                    updatedAt: user.updatedAt,
-                    motivation: motivation
+                    updatedAt: user.updatedAt
                 }
             });
         } catch (error) {
