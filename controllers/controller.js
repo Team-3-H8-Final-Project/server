@@ -2,7 +2,7 @@ require("dotenv").config();
 const { GoogleGenAI } = require("@google/genai");
 const { question,User, Challenge, Level, Conversation } = require("../models");
 
-const ai = new GoogleGenAI({ apiKey: "AIzaSyA3bzCCK6ckqAkzKknoC2hDJJICM9GiZnY"});
+const ai = new GoogleGenAI({ apiKey: "AIzaSyA3bzCCK6ckqAkzKknoC2hDJJICM9GiZnY" });
 
 class Controller {
   static async generateGrammar(req, res, next) {
@@ -17,14 +17,6 @@ class Controller {
 
       Sertakan minimal 5 contoh kalimat untuk setiap level kesulitan. Pastikan kalimat-kalimat tersebut bervariasi dalam struktur dan kosakata. Fokus pada kalimat-kalimat yang umum digunakan dalam percakapan sehari-hari. Output harus berupa array JSON.`,
       });
-
-      if (!response.text || typeof response.text !== "string") {
-        return res
-          .status(500)
-          .json({ message: "Gagal menerima respons teks dari AI." });
-      }
-
-      console.log("Response Text:", response.text);
 
       try {
         const cleanedResponseText = response.text.trim();
@@ -50,12 +42,7 @@ class Controller {
           data: savedQuestions,
         });
       } catch (parseError) {
-        console.error("Error parsing JSON:", parseError);
-        console.error("Teks yang gagal di-parse:", response.text);
-        return res.status(500).json({
-          message: "Gagal memproses respons JSON dari AI.",
-          error: parseError.message,
-        });
+        return res.status(500).json({ message: 'Gagal memproses respons JSON dari AI.', error: parseError.message });
       }
     } catch (error) {
       next(error);
@@ -84,12 +71,6 @@ class Controller {
         attributes: ["id", "question", "answer", "level"],
       });
 
-      if (questions.length === 0) {
-        return res
-          .status(404)
-          .json({ message: `No questions found for level: ${level}` });
-      }
-
       res.status(200).json({
         message: `Questions for level: ${level}`,
         data: questions,
@@ -104,7 +85,7 @@ class Controller {
 
       if (!theme) {
         return res.status(400).json({
-          message: "Theme is required",
+          message: "Theme is required"
         });
       }
 
@@ -122,27 +103,16 @@ class Controller {
   Buat minimal 5 soal untuk setiap level. Pastikan pilihan jawaban masuk akal dan bervariasi. dan buat ini dalam format json.`,
       });
 
-      console.log(response.text);
-      if (!response.text || typeof response.text !== "string") {
-        return res
-          .status(500)
-          .json({ message: "Gagal menerima respons teks dari AI." });
-      }
-
       const cleanedText = response.text
-        .replace(/^```json/, "")
-        .replace(/```$/, "")
+        .replace(/^```json/, '')
+        .replace(/```$/, '')
         .trim();
 
       let parsed;
       try {
         parsed = JSON.parse(cleanedText);
       } catch (err) {
-        console.error("Gagal parse JSON:", err);
-        console.error("Isi response:", response.text);
-        return res
-          .status(500)
-          .json({ message: "Gagal memproses data AI", error: err.message });
+        return res.status(500).json({ message: "Gagal memproses data AI", error: err.message });
       }
 
       const formattedChallenges = parsed.map((item) => ({
@@ -150,7 +120,7 @@ class Controller {
         answer: item.jawabanBenar,
         level: item.level,
         options: item.pilihanJawaban,
-        theme: theme,
+        theme: theme
       }));
 
       const savedChallenges = await Challenge.bulkCreate(formattedChallenges);
