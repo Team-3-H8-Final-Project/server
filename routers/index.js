@@ -21,6 +21,13 @@ router.post("/challenge", authentication, Controller.generateChallenge);
 router.get("/challenge", authentication, Controller.getChallenges);
 
 router.get("/profile", authentication, UserController.getProfile);
+router.post("/conversation", authentication, Controller.generateConversation);
+router.get("/conversation", authentication, Controller.getConversations);
+router.delete(
+  "/conversation/:id",
+  authentication,
+  Controller.deleteConversation
+);
 router.post(
     "/feedback/:type",
     authentication,
@@ -28,6 +35,11 @@ router.post(
 ); //type : conversation | challenge | grammar
 router.get("/feedback", authentication, FeedbackController.getFeedback);
 router.get("/feedback/:id", authentication, FeedbackController.getFeedbackById);
+router.delete(
+  "/feedback/:id",
+  authentication,
+  FeedbackController.deleteFeedback
+);
 module.exports = {
     router,
 };

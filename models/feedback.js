@@ -34,11 +34,29 @@ module.exports = (sequelize, DataTypes) => {
       },
       userId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        references: {
+          model: "Users",
+          key: "id",
+        },
       },
       finalAssessment: {
         type: DataTypes.TEXT,
         allowNull: false,
+      },
+      createdAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        get() {
+          const rawDate = this.getDataValue("createdAt");
+          if (rawDate) {
+            return rawDate.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "2-digit",
+            });
+          }
+          return null;
+        },
       },
     },
     {
