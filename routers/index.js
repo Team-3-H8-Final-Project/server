@@ -13,7 +13,7 @@ router.get("/", (req, res) => {
 router.post("/login", UserController.login);
 router.post("/register", UserController.register);
 router.get("/profile", authentication, UserController.getProfile);
-router.put("/profile", authentication, UserController.updateProfile);
+router.put("/profile", authentication, UserController.updateProfile); // update profile
 
 
 // grammar

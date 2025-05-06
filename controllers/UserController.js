@@ -126,6 +126,7 @@ class UserController {
                     name: user.name,
                     email: user.email,
                     username: user.username,
+                    level: user.level ?? 1,
                     bio: user.bio ?? "",
                 }
             });
@@ -138,7 +139,7 @@ class UserController {
     static async updateProfile(req, res, next) {
         try {
             const { id } = req.user;
-            const { name, email, username, bio } = req.body;
+            const { name, email, username, bio, currentLevelId } = req.body;
 
             const user = await User.findByPk(id);
 
@@ -153,7 +154,8 @@ class UserController {
                 name,
                 email,
                 username,
-                bio
+                bio,
+                currentLevelId
             });
 
             res.status(200).json({
@@ -164,6 +166,7 @@ class UserController {
                     email: user.email,
                     username: user.username,
                     bio: user.bio ?? "",
+                    currentLevelId: user.currentLevelId ?? 1,
                 }
             });
         } catch (error) {
@@ -171,36 +174,6 @@ class UserController {
         }
     }
 
-    // update level
-    static async updateLevel(req, res, next) {
-        try {
-            const { id } = req.user;
-            const { level } = req.body;
-
-            const user = await User.findByPk(id);
-
-            if (!user) {
-                throw {
-                    name: "NotFound",
-                    message: "User not found"
-                }
-            }
-
-            await user.update({
-                level
-            });
-
-            res.status(200).json({
-                message: "User level updated successfully",
-                data: {
-                    id: user.id,
-                    level: user.level,
-                }
-            });
-        } catch (error) {
-            next(error);
-        }
-    }
 }
 
 module.exports = UserController
