@@ -116,7 +116,7 @@ class UserController {
             const { id } = req.user;
 
             const user = await User.findByPk(id, {
-                attributes: ['id', 'name', 'email', 'username', 'createdAt', 'updatedAt']
+                attributes: ['id', 'name', 'email', 'username', 'createdAt', 'updatedAt', 'currentLevelId']
             });
 
             res.status(200).json({
@@ -126,7 +126,7 @@ class UserController {
                     name: user.name,
                     email: user.email,
                     username: user.username,
-                    level: user.level ?? 1,
+                    currentLevelId: user.currentLevelId ?? 1,
                     bio: user.bio ?? "",
                 }
             });
