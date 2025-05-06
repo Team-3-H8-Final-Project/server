@@ -132,6 +132,22 @@ class FeedbackController {
       next(error);
     }
   }
+  static async deleteFeedback(req, res, next) {
+    try {
+      const { id } = req.params;
+      const feedback = await Feedback.findByPk(id);
+      if (!feedback) {
+        throw {
+          name: "NotFound",
+          message: "Feedback not found",
+        };
+      }
+      await feedback.destroy();
+      res.status(200).json({ message: "Feedback deleted successfully" });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = FeedbackController;
