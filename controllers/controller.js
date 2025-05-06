@@ -1,6 +1,6 @@
 require("dotenv").config();
 const { GoogleGenAI } = require("@google/genai");
-const { question,User, Challenge, Level, Conversation } = require("../models");
+const { question, User, Challenge, Level, Conversation } = require("../models");
 
 const ai = new GoogleGenAI({ apiKey: "AIzaSyA3bzCCK6ckqAkzKknoC2hDJJICM9GiZnY" });
 
@@ -152,12 +152,6 @@ class Controller {
           ["id", "ASC"],
         ],
       });
-
-      if (challenges.length === 0) {
-        return res
-          .status(404)
-          .json({ message: `No challenges found for theme: ${theme}` });
-      }
 
       res.status(200).json({
         message: `Challenges for theme: ${theme}`,
