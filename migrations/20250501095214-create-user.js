@@ -31,6 +31,10 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
+      bio: {
+        allowNull: true,
+        type: Sequelize.STRING
+      },
       // default 1
       currentLevelId: {
         type: Sequelize.INTEGER,

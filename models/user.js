@@ -92,7 +92,11 @@ module.exports = (sequelize, DataTypes) => {
         model: 'Levels',
         key: 'id'
       }
-    }
+    },
+    bio: {
+      allowNull: true,
+      type: DataTypes.STRING
+    },
   }, {
     sequelize,
     modelName: 'User'
