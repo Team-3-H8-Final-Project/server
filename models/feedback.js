@@ -1,27 +1,51 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
+
 module.exports = (sequelize, DataTypes) => {
   class Feedback extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
-      // define association here
-      Feedback.hasMany(models.UserQuiz, { foreignKey: 'feedbackId' });
-      Feedback.hasMany(models.UserDailyQuizResult, { foreignKey: 'feedbackId' });
+      Feedback.hasMany(models.UserQuiz, { foreignKey: "feedbackId" });
+      Feedback.hasMany(models.UserDailyQuizResult, {
+        foreignKey: "feedbackId",
+      });
+      Feedback.belongsTo(models.User, { foreignKey: "userId" });
     }
   }
-  Feedback.init({
-    type: DataTypes.STRING,
-    content: DataTypes.STRING,
-    score: DataTypes.INTEGER
-  }, {
-    sequelize,
-    modelName: 'Feedback',
-  });
+  Feedback.init(
+    {
+      testType: {
+        type: DataTypes.STRING,
+      },
+      totalScore: {
+        type: DataTypes.FLOAT,
+        allowNull: false,
+      },
+      categoryScores: {
+        type: DataTypes.JSONB,
+        defaultValue: [],
+      },
+      strengths: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        defaultValue: [],
+      },
+      areasForImprovement: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        defaultValue: [],
+      },
+      userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      finalAssessment: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+    },
+    {
+      sequelize,
+      modelName: "Feedback",
+    }
+  );
+
   return Feedback;
 };
