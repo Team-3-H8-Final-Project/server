@@ -81,8 +81,10 @@ class FeedbackController {
           `,
         });
       } else if (type === "grammar") {
-        // code untuk grammar feedback
-      }
+        
+      } else {
+        throw new Error("Invalid type provided");
+      }      
       const responseText = response.text;
       const cleanedResponse = responseText.replace(/```json|```/g, "").trim();
       let feedbackData = JSON.parse(cleanedResponse);
@@ -125,7 +127,7 @@ class FeedbackController {
         throw {
           name: "NotFound",
           message: "Feedback not found",
-        };
+        }; 
       }
       res.status(200).json(feedback);
     } catch (error) {
