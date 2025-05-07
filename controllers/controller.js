@@ -136,7 +136,7 @@ class Controller {
 
   static async getChallenges(req, res, next) {
     try {
-      const { theme } = req.query;
+      const { theme, level } = req.query;
 
       if (!theme) {
         return res.status(400).json({
@@ -144,8 +144,16 @@ class Controller {
         });
       }
 
+      // Build the where clause conditionally
+      const whereClause = { theme };
+
+      // Add level to where clause if it exists in query
+      if (level) {
+        whereClause.level = level;
+      }
+
       const challenges = await Challenge.findAll({
-        where: { theme },
+        where: whereClause,
         attributes: ["id", "question", "answer", "level", "options", "theme"],
         order: [
           ["level", "ASC"],
@@ -154,13 +162,16 @@ class Controller {
       });
 
       res.status(200).json({
-        message: `Challenges for theme: ${theme}`,
+        message: level
+          ? `Challenges for theme: ${theme}, level: ${level}`
+          : `Challenges for theme: ${theme}`,
         data: challenges,
       });
     } catch (error) {
       next(error);
     }
   }
+
   static async generateConversation(req, res, next) {
     try {
       let { topic, categories, durationLabel } = req.body;

@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Controller = require("../controllers/controller");
 const UserController = require("../controllers/UserController");
+const ChallengeTopic = require("../controllers/ChallengeTopicController");
 const authentication = require("../middleware/authentication");
 const FeedbackController = require("../controllers/FeedbackController");
 
@@ -15,12 +16,12 @@ router.post("/register", UserController.register);
 router.get("/profile", authentication, UserController.getProfile);
 router.put("/profile", authentication, UserController.updateProfile); // update profile
 
-
 // grammar
 router.post("/generate", authentication, Controller.generateGrammar);
 router.get("/grammar", authentication, Controller.getQuestionsByLevel);
 
 // challenge
+router.get("/challenge-topics", authentication, ChallengeTopic.index);
 router.post("/challenge", authentication, Controller.generateChallenge);
 router.get("/challenge", authentication, Controller.getChallenges);
 
