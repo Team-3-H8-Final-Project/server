@@ -9,6 +9,7 @@ const ai = new GoogleGenAI({ apiKey: "AIzaSyA3bzCCK6ckqAkzKknoC2hDJJICM9GiZnY" }
 class UserController {
     static async login(req, res, next) {
         try {
+            console.log(req.body, '<==== body login');
             const { identifier, password } = req.body;
             if (!identifier) {
                 throw {
