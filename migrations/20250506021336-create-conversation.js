@@ -2,35 +2,33 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("Feedbacks", {
+    await queryInterface.createTable("Conversations", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      testType: {
+      topic: {
         type: Sequelize.STRING,
-      },
-      totalScore: {
-        type: Sequelize.FLOAT,
         allowNull: false,
       },
-      categoryScores: {
-        type: Sequelize.JSONB,
+      questions: {
+        type: Sequelize.ARRAY(Sequelize.TEXT),
+        allowNull: false,
         defaultValue: [],
       },
-      strengths: {
-        type: Sequelize.ARRAY(Sequelize.STRING),
-        defaultValue: [],
+      durationLabel: {
+        type: Sequelize.STRING,
+        allowNull: false,
       },
-      areasForImprovement: {
-        type: Sequelize.ARRAY(Sequelize.STRING),
+      categories: {
+        type: Sequelize.ARRAY(Sequelize.TEXT),
+        allowNull: false,
         defaultValue: [],
       },
       userId: {
         type: Sequelize.INTEGER,
-        allowNull: false,
         references: {
           model: "Users",
           key: "id",
@@ -38,23 +36,21 @@ module.exports = {
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
       },
-      finalAssessment: {
-        type: Sequelize.TEXT,
-        allowNull: false,
+      finalized: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
       },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal("NOW()"),
       },
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal("NOW()"),
       },
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("Feedbacks");
+    await queryInterface.dropTable("Conversations");
   },
 };

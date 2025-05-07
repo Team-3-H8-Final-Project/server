@@ -6,12 +6,12 @@ module.exports = (err, req, res, next) => {
 
     switch (err.name) {
         case 'Unauthorized':
-            status = 403;
+            status = 401;
             message = err.message;
             break;
         case 'NotFound':
             status = 404;
-            message = 'Postingan not found';
+            message = 'Error not found';
             break;
         case 'Unauthenticated':
             status = 401;
@@ -34,6 +34,7 @@ module.exports = (err, req, res, next) => {
             message = err.message;
             break;
         case 'JsonWebTokenError':
+            status = 401;
             message = 'Invalid token';
             break;
         default:

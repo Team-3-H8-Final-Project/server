@@ -56,8 +56,7 @@ class UserController {
 
             res.status(200).json({
                 message: `login success`,
-                access_token: bearerToken,
-                id: id,
+                access_token: bearerToken
             })
         } catch (error) {
             next(error)
@@ -112,31 +111,15 @@ class UserController {
             next(error)
         }
     }
-        static async getProfile(req, res, next) {
+
+    static async getProfile(req, res, next) {
         try {
             const { id } = req.user;
-    
+
             const user = await User.findByPk(id, {
-                attributes: ['id', 'name', 'email', 'username', 'createdAt', 'updatedAt'] 
+                attributes: ['id', 'name', 'email', 'username', 'createdAt', 'updatedAt', 'currentLevelId']
             });
-    
-            if (!user) {
-                throw {
-                    name: "NotFound",
-                    message: "User not found"
-                };
-            }
-    
-            const response = await ai.models.generateContent({
-                model: "gemini-2.0-flash",
-                contents: `Generate a short motivational quote for learning English. Keep it concise and inspiring.`
-            });
-    
-            let motivation = "Keep learning!";
-            if (response.text && typeof response.text === "string") {
-                motivation = response.text.trim();
-            }
-    
+
             res.status(200).json({
                 message: "User profile retrieved successfully",
                 data: {
@@ -144,15 +127,54 @@ class UserController {
                     name: user.name,
                     email: user.email,
                     username: user.username,
-                    createdAt: user.createdAt,
-                    updatedAt: user.updatedAt,
-                    motivation: motivation
+                    currentLevelId: user.currentLevelId ?? 1,
+                    bio: user.bio ?? "",
                 }
             });
         } catch (error) {
             next(error);
         }
     }
+
+    // update profile
+    static async updateProfile(req, res, next) {
+        try {
+            const { id } = req.user;
+            const { name, email, username, bio, currentLevelId } = req.body;
+
+            const user = await User.findByPk(id);
+
+            if (!user) {
+                throw {
+                    name: "NotFound",
+                    message: "User not found"
+                }
+            }
+
+            await user.update({
+                name,
+                email,
+                username,
+                bio,
+                currentLevelId
+            });
+
+            res.status(200).json({
+                message: "User profile updated successfully",
+                data: {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    username: user.username,
+                    bio: user.bio ?? "",
+                    currentLevelId: user.currentLevelId ?? 1,
+                }
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
 }
 
 module.exports = UserController

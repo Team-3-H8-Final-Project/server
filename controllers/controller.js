@@ -1,8 +1,9 @@
-require('dotenv').config();
-const { GoogleGenAI, Type } = require("@google/genai");
-const { question, Challenge } = require('../models');
+require("dotenv").config();
+const { GoogleGenAI } = require("@google/genai");
+const { question, User, Challenge, Level, Conversation } = require("../models");
 
-const ai = new GoogleGenAI({ apiKey: "AIzaSyA3bzCCK6ckqAkzKknoC2hDJJICM9GiZnY"});
+
+const ai = new GoogleGenAI({ apiKey: "AIzaSyA3bzCCK6ckqAkzKknoC2hDJJICM9GiZnY" });
 
 class Controller {
   static async generateGrammar(req, res, next) {
@@ -16,18 +17,17 @@ class Controller {
         jawabanBenar : "[Terjemahan Bahasa Inggris yang Benar]"
 
         Sertakan minimal 5 contoh kalimat untuk setiap level kesulitan. Pastikan kalimat-kalimat tersebut bervariasi dalam struktur dan kosakata. Fokus pada kalimat-kalimat yang umum digunakan dalam percakapan sehari-hari. Output harus berupa array JSON.`,
+
       });
-
-      if (!response.text || typeof response.text !== 'string') {
-        return res.status(500).json({ message: 'Gagal menerima respons teks dari AI.' });
-      }
-
-      console.log("Response Text:", response.text);
 
       try {
         const cleanedResponseText = response.text.trim();
-        const withoutLeadingTicks = cleanedResponseText.startsWith("```json") ? cleanedResponseText.substring(7) : cleanedResponseText;
-        const withoutTrailingTicks = withoutLeadingTicks.endsWith("```") ? withoutLeadingTicks.slice(0, -3) : withoutLeadingTicks;
+        const withoutLeadingTicks = cleanedResponseText.startsWith("```json")
+          ? cleanedResponseText.substring(7)
+          : cleanedResponseText;
+        const withoutTrailingTicks = withoutLeadingTicks.endsWith("```")
+          ? withoutLeadingTicks.slice(0, -3)
+          : withoutLeadingTicks;
         const finalCleanedText = withoutTrailingTicks.trim();
 
         const generatedData = JSON.parse(finalCleanedText);
@@ -44,8 +44,6 @@ class Controller {
           data: savedQuestions,
         });
       } catch (parseError) {
-        console.error("Error parsing JSON:", parseError);
-        console.error("Teks yang gagal di-parse:", response.text);
         return res.status(500).json({ message: 'Gagal memproses respons JSON dari AI.', error: parseError.message });
       }
     } catch (error) {
@@ -61,19 +59,19 @@ class Controller {
         return res.status(400).json({ message: "Level is required" });
       }
 
-      const allowedLevels = ['Pemula', 'Menengah', 'Lanjutan', 'Fasih'];
+      const allowedLevels = ["Pemula", "Menengah", "Lanjutan", "Fasih"];
       if (!allowedLevels.includes(level)) {
-        return res.status(400).json({ message: `Invalid level. Allowed levels are: ${allowedLevels.join(', ')}` });
+        return res.status(400).json({
+          message: `Invalid level. Allowed levels are: ${allowedLevels.join(
+            ", "
+          )}`,
+        });
       }
 
       const questions = await question.findAll({
         where: { level },
-        attributes: ['id', 'question', 'answer', 'level'],
+        attributes: ["id", "question", "answer", "level"],
       });
-
-      if (questions.length === 0) {
-        return res.status(404).json({ message: `No questions found for level: ${level}` });
-      }
 
       res.status(200).json({
         message: `Questions for level: ${level}`,
@@ -83,6 +81,7 @@ class Controller {
       next(error);
     }
   }
+
      static async generateChallenge(req, res, next) {
       try {
           const { theme } = req.body;
@@ -144,94 +143,165 @@ class Controller {
       } catch (error) {
           next(error);
       }
+
   }
-  
+
   static async getChallenges(req, res, next) {
-      try {
-          const { theme } = req.query;
-  
-          if (!theme) {
-              return res.status(400).json({
-                  message: "Theme is required"
-              });
-          }
-  
-          const challenges = await Challenge.findAll({
-              where: { theme },
-              attributes: ['id', 'question', 'answer', 'level', 'options', 'theme'],
-              order: [['level', 'ASC'], ['id', 'ASC']] 
-          });
-  
-          if (challenges.length === 0) {
-              return res.status(404).json({ message: `No challenges found for theme: ${theme}` });
-          }
-  
-          res.status(200).json({
-              message: `Challenges for theme: ${theme}`,
-              data: challenges
-          });
-      } catch (error) {
-          next(error);
-      }
-  }
-
-  static async generateConversation(req, res, next) {
     try {
-      console.log(req.headers, '=========');
-      const { theme, skill, time } = req.query
-      if (!theme) throw {name: 'BadRequest', message: 'Theme is required'}
+      const { theme, level } = req.query;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: `buatkan sebuah pertanyaan untuk sebuah percakapan dalam bahasa inggris dengan tema ${theme}
-          pastikan pertanyaan tersebut bersifat terbuka dan tidak bisa dijawab dengan "ya" atau "tidak"
-          dan pastikan percakapan tersebut dapat melatih skill ${skill} user
-          pastikan percakapan tersebut berlangsung selama ${time} menit
-          berikan data dalam format:
-          ['pertanyaan 1', 'pertanyaan 2', 'pertanyaan 3', 'pertanyaan 4', 'pertanyaan 5']
-          pastikan tidak ada data lain selain data tersebut, saya hanya ingin menerima output berupa array
-        `,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.STRING
-            }
-          }
-        }
+      if (!theme) {
+        return res.status(400).json({
+          message: "Theme is required",
+        });
+      }
+
+      // Build the where clause conditionally
+      const whereClause = { theme };
+
+      // Add level to where clause if it exists in query
+      if (level) {
+        whereClause.level = level;
+      }
+
+      const challenges = await Challenge.findAll({
+        where: whereClause,
+        attributes: ["id", "question", "answer", "level", "options", "theme"],
+        order: [
+          ["level", "ASC"],
+          ["id", "ASC"],
+        ],
       });
 
-      if (!response.text || typeof response.text !== 'string') {
-        return res.status(500).json({ message: 'Gagal menerima respons teks dari AI.' });
-      }
-      
-      const cleanedText = response.text
-      .replace(/^```json/, '')
-      .replace(/```$/, '')
-      .trim()
-
-      console.log(response.text, '<=======');
-      
-      let parsed = JSON.stringify(cleanedText);
-      try {
-        parsed = JSON.parse(parsed);
-        console.log(typeof cleanedText, parsed);
-      } catch (err) {
-        console.error("Gagal parse JSON:", err);
-        console.error("Isi response:", response.text);
-        return res.status(500).json({ message: "Gagal memproses data AI", error: err.message });
-      }
-      
-      return res.status(200).send({ questions: parsed })
-      
+      res.status(200).json({
+        message: level
+          ? `Challenges for theme: ${theme}, level: ${level}`
+          : `Challenges for theme: ${theme}`,
+        data: challenges,
+      });
     } catch (error) {
-      console.log(error);
       next(error);
     }
   }
 
+  static async generateConversation(req, res, next) {
+    try {
+      let { topic, categories, durationLabel } = req.body;
+      const { id } = req.user;
 
+      const user = await User.findByPk(id, {
+        include: {
+          model: Level,
+          as: "currentLevel",
+          attributes: ["id", "name"],
+        },
+      });
+
+      let level = "Pemula";
+      if (user?.currentLevel?.name) {
+        level = user.currentLevel.name;
+      }
+
+      let amount;
+      switch (durationLabel) {
+        case "Pendek":
+          amount = 4;
+          break;
+        case "Sedang":
+          amount = 7;
+          break;
+        case "Panjang":
+          amount = 10;
+          break;
+        default:
+          amount = 5;
+      }
+      if (typeof categories === "string") {
+        categories = categories.split(",").map((s) => s.trim());
+      }
+      const response = await ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: `Buatlah pertanyaan untuk latihan percakapan bahasa Inggris dengan siswa.
+        Topik percakapan yang dipilih adalah: ${topic}.
+        Kategori latihan yang ingin difokuskan adalah: ${categories.join(", ")}.
+        Tingkat kesulitan pertanyaan disesuaikan dengan level siswa: ${level}.
+        Durasi percakapan yang diinginkan adalah kategori: ${durationLabel}, jadi jumlah pertanyaan yang diberikan kira-kira ${amount} pertanyaan.
+        
+        Pertanyaan harus alami, mudah dipahami, dan relevan dengan topik. Fokus pada penggunaan kalimat yang umum digunakan dalam kehidupan nyata.
+        
+        Kembalikan hanya daftar pertanyaan dalam bahasa Inggris, tanpa teks tambahan apa pun.
+        Format hasil harus seperti ini:
+        ["Question 1", "Question 2", "Question 3", ...]
+        
+        Jangan gunakan karakter spesial seperti "/", "*", atau simbol lain yang bisa mengganggu asisten suara.`,
+      });
+
+      const responseText = response.text;
+      let questions;
+      try {
+        questions = JSON.parse(responseText);
+        if (
+          !Array.isArray(questions) ||
+          !questions.every((q) => typeof q === "string")
+        ) {
+          throw {
+            name: "BADREQUEST",
+            message: "Invalid questions format",
+          };
+        }
+      } catch (error) {
+        console.error("Error parsing questions:", error);
+        throw {
+          name: "BADREQUEST",
+          message: "Failed to generate valid questions",
+        };
+      }
+      const conversation = await Conversation.create({
+        topic,
+        questions,
+        durationLabel,
+        categories,
+        userId: id,
+        finalized: false,
+      });
+      res.status(201).json(conversation);
+    } catch (error) {
+      console.error("Error in create Conversation:", error);
+      next(error);
+    }
+  }
+  static async getConversations(req, res, next) {
+    try {
+      const { id } = req.user;
+      const conversations = await Conversation.findAll({
+        where: { userId: id, finalized: false },
+        attributes: ["id", "topic", "durationLabel", "categories"],
+      });
+
+      if (conversations.length === 0) {
+        return res.status(404).json({ message: "No conversations found" });
+      }
+
+      res.status(200).json(conversations);
+    } catch (error) {
+      next(error);
+    }
+  }
+  static async deleteConversation(req, res, next) {
+    try {
+      const { id } = req.params;
+      const conversation = await Conversation.findByPk(id);
+
+
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+      await conversation.destroy();
+      res.status(200).json({ message: "Conversation deleted successfully" });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = Controller;
