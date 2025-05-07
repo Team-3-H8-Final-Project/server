@@ -15,6 +15,7 @@ router.post('/generate', authentication, Controller.generateGrammar);
 router.get('/grammar', authentication, Controller.getQuestionsByLevel);
 router.post('/challenge', authentication, Controller.generateChallenge);
 router.get('/challenge', authentication, Controller.getChallenges);
+router.get('/conversation', authentication, Controller.generateConversation);
 router.get('/profile', authentication, UserController.getProfile);
 module.exports = {
     router

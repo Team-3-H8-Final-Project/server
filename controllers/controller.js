@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { GoogleGenAI } = require("@google/genai");
+const { GoogleGenAI, Type } = require("@google/genai");
 const { question, Challenge } = require('../models');
 
 const ai = new GoogleGenAI({ apiKey: "AIzaSyA3bzCCK6ckqAkzKknoC2hDJJICM9GiZnY"});
@@ -11,11 +11,11 @@ class Controller {
         model: "gemini-2.0-flash",
         contents: `Buatlah daftar kalimat-kalimat dalam bahasa Indonesia yang bisa digunakan untuk tes kemampuan berbicara bahasa Inggris. Setiap kalimat harus memiliki format sebagai berikut:
 
-kalimat : "[Kalimat Bahasa Indonesia]"
-level : "[Tingkat Kesulitan: Pemula, Menengah, Lanjutan, Fasih]"
-jawabanBenar : "[Terjemahan Bahasa Inggris yang Benar]"
+        kalimat : "[Kalimat Bahasa Indonesia]"
+        level : "[Tingkat Kesulitan: Pemula, Menengah, Lanjutan, Fasih]"
+        jawabanBenar : "[Terjemahan Bahasa Inggris yang Benar]"
 
-Sertakan minimal 5 contoh kalimat untuk setiap level kesulitan. Pastikan kalimat-kalimat tersebut bervariasi dalam struktur dan kosakata. Fokus pada kalimat-kalimat yang umum digunakan dalam percakapan sehari-hari. Output harus berupa array JSON.`,
+        Sertakan minimal 5 contoh kalimat untuk setiap level kesulitan. Pastikan kalimat-kalimat tersebut bervariasi dalam struktur dan kosakata. Fokus pada kalimat-kalimat yang umum digunakan dalam percakapan sehari-hari. Output harus berupa array JSON.`,
       });
 
       if (!response.text || typeof response.text !== 'string') {
@@ -96,15 +96,15 @@ Sertakan minimal 5 contoh kalimat untuk setiap level kesulitan. Pastikan kalimat
           const response = await ai.models.generateContent({
               model: "gemini-2.0-flash",
               contents: `Buat daftar soal bahasa Indonesia untuk tes kemampuan bahasa Inggris dengan tema "${theme}". Format setiap item:
-  
-  {
-    kalimat: "[Kalimat Bahasa Indonesia]",
-    level: "[Pemula | Menengah | Lanjutan | Fasih]",
-    jawabanBenar: "[Terjemahan yang benar]",
-    pilihanJawaban: ["...", "...", "...", "..."] <- ini termasuk jawabanBenar dan ingan jawaban benar kadang ada di posisi pertama, kadang ada di posisi kedua, kadang ada di posisi ke tiga, dan kadang juga ada di posisi ke empat jadi tidak netap ya
-  }
-  
-  Buat minimal 5 soal untuk setiap level. Pastikan pilihan jawaban masuk akal dan bervariasi. dan buat ini dalam format json.`,
+              
+              {
+                kalimat: "[Kalimat Bahasa Indonesia]",
+                level: "[Pemula | Menengah | Lanjutan | Fasih]",
+                jawabanBenar: "[Terjemahan yang benar]",
+                pilihanJawaban: ["...", "...", "...", "..."] <- ini termasuk jawabanBenar dan ingan jawaban benar kadang ada di posisi pertama, kadang ada di posisi kedua, kadang ada di posisi ke tiga, dan kadang juga ada di posisi ke empat jadi tidak netap ya
+              }
+              
+              Buat minimal 5 soal untuk setiap level. Pastikan pilihan jawaban masuk akal dan bervariasi. dan buat ini dalam format json.`,
           });
   
           console.log(response.text);
@@ -173,6 +173,62 @@ Sertakan minimal 5 contoh kalimat untuk setiap level kesulitan. Pastikan kalimat
       } catch (error) {
           next(error);
       }
+  }
+
+  static async generateConversation(req, res, next) {
+    try {
+      console.log(req.headers, '=========');
+      const { theme, skill, time } = req.query
+      if (!theme) throw {name: 'BadRequest', message: 'Theme is required'}
+
+      const response = await ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: `buatkan sebuah pertanyaan untuk sebuah percakapan dalam bahasa inggris dengan tema ${theme}
+          pastikan pertanyaan tersebut bersifat terbuka dan tidak bisa dijawab dengan "ya" atau "tidak"
+          dan pastikan percakapan tersebut dapat melatih skill ${skill} user
+          pastikan percakapan tersebut berlangsung selama ${time} menit
+          berikan data dalam format:
+          ['pertanyaan 1', 'pertanyaan 2', 'pertanyaan 3', 'pertanyaan 4', 'pertanyaan 5']
+          pastikan tidak ada data lain selain data tersebut, saya hanya ingin menerima output berupa array
+        `,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.STRING
+            }
+          }
+        }
+      });
+
+      if (!response.text || typeof response.text !== 'string') {
+        return res.status(500).json({ message: 'Gagal menerima respons teks dari AI.' });
+      }
+      
+      const cleanedText = response.text
+      .replace(/^```json/, '')
+      .replace(/```$/, '')
+      .trim()
+
+      console.log(response.text, '<=======');
+      
+      let parsed = JSON.stringify(cleanedText);
+      try {
+        parsed = JSON.parse(parsed);
+        console.log(typeof cleanedText, parsed);
+      } catch (err) {
+        console.error("Gagal parse JSON:", err);
+        console.error("Isi response:", response.text);
+        return res.status(500).json({ message: "Gagal memproses data AI", error: err.message });
+      }
+      
+      return res.status(200).send({ questions: parsed })
+      
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
   }
 
 

@@ -3,7 +3,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    return queryInterface.bulkInsert('Challenges', [
+    await queryInterface.bulkInsert('Challenges', [
       {
         question: 'What is the capital of France?',
         answer: 'Paris',
@@ -50,6 +50,24 @@ module.exports = {
         updatedAt: new Date(),
       },
     ]);
+
+    await queryInterface.bulkInsert('Levels', [
+      {
+        name: 'Pemula',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: 'Menengah',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: 'Mahir',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
   },
 
 
@@ -60,7 +78,8 @@ module.exports = {
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
-    return queryInterface.bulkDelete('Challenges', null, {});
+    await queryInterface.bulkDelete('Challenges', null, {});
+    await queryInterface.bulkDelete('Levels', null, {});
   },
     
 };
