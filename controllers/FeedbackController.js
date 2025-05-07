@@ -81,8 +81,43 @@ class FeedbackController {
           `,
         });
       } else if (type === "grammar") {
-        // code untuk grammar feedback
-      }
+        const { answers } = req.body;
+      
+        response = await ai.models.generateContent({
+          model: "gemini-2.0-flash",
+          contents: `
+            Kamu adalah pelatih bahasa AI yang mengevaluasi jawaban siswa pada latihan grammar bahasa Inggris. Tugasmu adalah menilai performa siswa berdasarkan struktur kalimat, pemahaman grammar, dan ketepatan penggunaan tenses atau bentuk kalimat.
+      
+            Data jawaban siswa:
+            ${JSON.stringify(answers, null, 2)}
+
+            **Instruksi:**
+            Kembalikan respons dalam format **JSON yang valid** dengan struktur berikut:
+      
+            \`\`\`json
+            {
+              "categoryScores": {
+                "Pemahaman Tata Bahasa": 0-100,
+                "Struktur Kalimat": 0-100,
+                "Ketepatan Jawaban": 0-100
+              },
+
+              "strengths": [
+                "Daftar kekuatan siswa dalam menjawab soal grammar"
+              ],
+              "areasForImprovement": [
+                "Daftar area grammar yang perlu ditingkatkan secara spesifik"
+              ],
+              "finalAssessment": "Ringkasan evaluasi performa siswa untuk soal ini"
+            }
+            \`\`\`
+      
+            Ikuti format ini dengan ketat dan **jangan sertakan teks tambahan di luar JSON**.
+          `,
+        });
+      } else {
+        throw new Error("Invalid type provided");
+      }      
       const responseText = response.text;
       const cleanedResponse = responseText.replace(/```json|```/g, "").trim();
       let feedbackData = JSON.parse(cleanedResponse);
@@ -125,7 +160,7 @@ class FeedbackController {
         throw {
           name: "NotFound",
           message: "Feedback not found",
-        };
+        }; 
       }
       res.status(200).json(feedback);
     } catch (error) {
